@@ -5,8 +5,10 @@
 package it.polito.tdp.nyc;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import it.polito.tdp.nyc.model.Model;
+import it.polito.tdp.nyc.model.Vicini;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -34,7 +36,7 @@ public class FXMLController {
     private Button btnPercorso; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbProvider"
-    private ComboBox<?> cmbProvider; // Value injected by FXMLLoader
+    private ComboBox<String> cmbProvider; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtDistanza"
     private TextField txtDistanza; // Value injected by FXMLLoader
@@ -51,6 +53,14 @@ public class FXMLController {
     @FXML
     void doAnalisiGrafo(ActionEvent event) {
     	
+    	this.txtResult.appendText("\n\nVERTICI CON PIU' VICINI:");
+    	
+    	List<Vicini> vicini = this.model.doAnalisi();
+    	
+    	for(Vicini v : vicini) {
+    		this.txtResult.appendText("\n"+v.getLoc()+" #vicini: "+v.getVicini());
+    	}
+    	
     }
 
     @FXML
@@ -61,6 +71,35 @@ public class FXMLController {
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	
+    	this.txtResult.clear();
+    	
+    	String provider = this.cmbProvider.getValue();
+    	
+    	if(provider == null) {
+    		this.txtResult.appendText("Selezionare provider per continuare.");
+    		return;
+    	}
+    	
+    	Double x = 0.0;
+    	
+    	try {
+    		x= Double.parseDouble(this.txtDistanza.getText());
+    		
+    		if(x<=0){
+    			this.txtResult.setText("Inserire un numero positivo.");
+    			return;
+    		}
+    	}catch(NumberFormatException e) {
+    		txtResult.setText("Formato non corretto per la distanza.");
+    		return;
+    	}
+    	
+    	this.model.creaGrafo(provider, x);
+    	
+    	this.txtResult.appendText(this.model.infoGrafo());
+    	
+    	this.btnAnalisi.setDisable(false);
+    	this.btnPercorso.setDisable(false);	
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -77,5 +116,8 @@ public class FXMLController {
 
     public void setModel(Model model) {
     	this.model = model;
+    	this.btnAnalisi.setDisable(true);
+    	this.btnPercorso.setDisable(true);
+    	this.cmbProvider.getItems().addAll(this.model.getProvider());
     }
 }
