@@ -5,6 +5,7 @@
 package it.polito.tdp.nyc;
 
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 import it.polito.tdp.nyc.model.Model;
@@ -48,7 +49,7 @@ public class FXMLController {
     private TextField txtStringa; // Value injected by FXMLLoader
     
     @FXML // fx:id="txtTarget"
-    private ComboBox<?> txtTarget; // Value injected by FXMLLoader
+    private ComboBox<String> txtTarget; // Value injected by FXMLLoader
 
     @FXML
     void doAnalisiGrafo(ActionEvent event) {
@@ -65,6 +66,30 @@ public class FXMLController {
 
     @FXML
     void doCalcolaPercorso(ActionEvent event) {
+    	
+    	this.txtResult.clear();
+    	
+    	String target = this.txtTarget.getValue();
+    	
+    	if(target == null) {
+    		this.txtResult.appendText("Selezionare una località target per continuare.");
+    		return;
+    	}
+    	
+    	String evita = this.txtStringa.getText();
+    	
+    	if(evita.isEmpty() || evita.isBlank()) {
+    		this.txtResult.appendText("Inserire una stringa per continuare.");
+    		return;
+    	}
+    	
+    	
+    	List<String> percorso = this.model.findPath(target, evita);
+    	
+    	for(String s : percorso) {
+    		this.txtResult.appendText("\n"+s);
+    	}
+    	
     	
     }
 
@@ -100,6 +125,12 @@ public class FXMLController {
     	
     	this.btnAnalisi.setDisable(false);
     	this.btnPercorso.setDisable(false);	
+    	
+    	List<String> localita = this.model.getVertici();
+    	
+    	Collections.sort(localita);
+    	
+    	this.txtTarget.getItems().addAll(localita);
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete

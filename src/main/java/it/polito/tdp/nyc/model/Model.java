@@ -2,6 +2,7 @@ package it.polito.tdp.nyc.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
@@ -20,6 +21,8 @@ public class Model {
 	private Graph<String, DefaultWeightedEdge> grafo;
 	private List<String> provider;
 	private List<String> vertici;
+	
+	private List<String> percorso;
 
 	public Model() {
 		super();
@@ -49,7 +52,7 @@ public class Model {
 			if(vertici.contains(a.getL1()) && vertici.contains(a.getL2())){
 				
 				double dis = Math.abs(LatLngTool.distance(a.getPos1(), a.getPos2(), LengthUnit.KILOMETER));
-				
+				 
 				if(dis<=distance) {
 					
 					Graphs.addEdgeWithVertices(this.grafo, a.getL1(), a.getL2(), dis);			
@@ -80,11 +83,52 @@ public class Model {
 			}
 				
 		}
-		
 		return ver;
-		
 	}
 	
+    public List<String> findPath(String target, String evita) {
+    	
+    	this.percorso = new ArrayList<>();
+    	
+    	List<String> visited = new ArrayList<>();
+		
+		List<Vicini> localita = this.doAnalisi();
+		
+		Random ran = new Random();
+		
+		int index = ran.nextInt(localita.size());
+		
+		String partenza = localita.get(index).getLoc();
+    	
+        percorso.add(partenza);
+        
+        dfs(partenza, target, evita, visited, percorso);
+        
+        return percorso;
+    }
+
+    private boolean dfs(String current, String target, String substring, List<String> visited, List<String> path) {
+        
+    	visited.add(current);
+
+        if (current.equals(target)) {
+            return true;
+        }
+
+        List<String> neighbors = Graphs.neighborListOf(this.grafo, current);
+
+        for (String neighbor : neighbors) {
+            if (!visited.contains(neighbor) && !neighbor.contains(substring)) {
+                path.add(neighbor);
+                if (dfs(neighbor, target, substring, visited, path)) {
+                    return true;
+                }
+                path.remove(path.size() - 1);
+            }
+        }
+
+        return false;
+    }
 	
 	public Graph<String, DefaultWeightedEdge> getGrafo() {
 		return grafo;
@@ -101,9 +145,6 @@ public class Model {
 	public String infoGrafo() {
 		return "Grafo creato!\n#Vertici: "+this.grafo.vertexSet().size()+"\n#Archi: "+this.grafo.edgeSet().size();
 	}
-
-	
-	
 	
 }
- 
+  
